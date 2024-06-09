@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Allocator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Budget Allocator</h1>
+        <form id="budgetForm">
+            <label for="salary">Enter your monthly salary in rupees:</label>
+            <input type="text" id="salary" name="salary" placeholder="Enter your salary...">
+            <button type="submit">Allocate Budget</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById('budgetForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const salary = document.getElementById('salary').value;
+            fetch('/allocate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'salary': salary
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+                if (data.error) {
+                    resultDiv.innerHTML = `<p>${data.error}</p>`;
+                } else {
+                    for (const category in data) {
+                        resultDiv.innerHTML += `<div class="category">`;
+                        resultDiv.innerHTML += `<h2>${category}</h2>`;
+                        resultDiv.innerHTML += `<ul>`;
+                        for (const subcategory in data[category]) {
+                            resultDiv.innerHTML += `<li>${subcategory}: ₹${data[category][subcategory].toFixed(2)}</li>`;
+                        }
+                        resultDiv.innerHTML += `</ul>`;
+                        resultDiv.innerHTML += `</div>`;
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
